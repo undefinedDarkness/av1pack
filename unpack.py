@@ -8,6 +8,7 @@ from PIL import Image
 from pprint import pprint
 
 FFMPEG_PATH = "ffmpeg"  # Adjust this path if necessary
+FPS = 30
 
 def extract_metadata(video_file: str, output_dir: Path) -> dict:
     metadata_path = output_dir / "metadata.json.gz"
@@ -30,7 +31,7 @@ def extract_frames(video_file: str, output_dir: Path):
     frame_pattern = str(output_dir / "%05d.png")
     
     subprocess.run([
-        FFMPEG_PATH, "-i", str(video_file), "-vf", "fps=1", frame_pattern
+        FFMPEG_PATH, "-i", str(video_file), "-vf", f"fps={FPS}", frame_pattern
     ], check=True)
 
 def restore_filenames_and_crop(metadata: dict, output_dir: Path):

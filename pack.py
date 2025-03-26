@@ -59,18 +59,25 @@ def pad_images(image_files: list[Path], bbox_width: int, bbox_height: int, tmp_d
 
 def encode_with_libx264(file_list_path: Path, bbox_width: int, bbox_height: int, crf: int, qp: int, metadata_path: Path, output_video: Path, preset: str) -> None:
     ffmpeg_command = [
-            "ffmpeg", "-r", "1", "-f", "concat", "-safe", "0", "-hwaccel", "auto", "-i", str(file_list_path),
+            "ffmpeg", "-r", "30", "-f", "concat", "-safe", "0", "-hwaccel", "auto", "-i", str(file_list_path),
             "-s", f"{bbox_width}x{bbox_height}",
-            "-c:v", "libx264", "-preset", preset, "-crf", str(crf), "-qp", str(qp),
+            "-c:v", "libx264", "-preset", preset,
+    ]
+    if crf >= 0:
+        ffmpeg_command.extend(["-crf", str(crf)])
+    if qp >= 0:
+        ffmpeg_command.extend(["-qp", str(qp)])
+    
+    ffmpeg_command.extend([
             "-tune", "stillimage", 
             "-attach", str(metadata_path), "-metadata:s:t", "mimetype=application/gzip",
             str(output_video)
-    ]
+    ])
     subprocess.run(ffmpeg_command, check=True)
 
 def encode_with_nvenc(file_list_path: Path, bbox_width: int, bbox_height: int, crf: int, qp: int, metadata_path: Path, output_video: Path, preset: str) -> None:
     ffmpeg_command = [
-            "ffmpeg", "-r", "1", "-f", "concat", "-safe", "0", "-i", str(file_list_path),
+            "ffmpeg", "-r", "30", "-f", "concat", "-safe", "0", "-i", str(file_list_path),
             "-s", f"{bbox_width}x{bbox_height}",
             "-c:v", "h264_nvenc", "-preset", preset, "-crf", str(crf), "-qp", str(qp),
             "-attach", str(metadata_path), "-metadata:s:t", "mimetype=application/gzip",
