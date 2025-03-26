@@ -5,10 +5,11 @@ import argparse
 from pathlib import Path
 from concurrent.futures import ThreadPoolExecutor
 from PIL import Image
+from pprint import pprint
 
 FFMPEG_PATH = "ffmpeg"  # Adjust this path if necessary
 
-def extract_metadata(video_file, output_dir):
+def extract_metadata(video_file: str, output_dir: Path) -> dict:
     metadata_path = output_dir / "metadata.json.gz"
     
     # Extract metadata from the video
@@ -25,31 +26,35 @@ def extract_metadata(video_file, output_dir):
     metadata_path.unlink()  # Remove metadata file after use
     return metadata
 
-def extract_frames(video_file, output_dir):
+def extract_frames(video_file: str, output_dir: Path):
     frame_pattern = str(output_dir / "%05d.png")
     
     subprocess.run([
         FFMPEG_PATH, "-i", str(video_file), "-vf", "fps=1", frame_pattern
     ], check=True)
 
-def restore_filenames_and_crop(metadata, output_dir):
+def restore_filenames_and_crop(metadata: dict, output_dir: Path):
     files = sorted(output_dir.glob("*.png"))
     if len(files) != len(metadata):
         missing_frames = len(metadata) - len(files)
         print(f"Warning: Frame count mismatch. {missing_frames} frames are different.")
     
-    def process_item(item):
+    def process_item(item: tuple[int, dict]):
         index, data = item
         if int(index) < len(files):
-            crop_and_rename(files[int(index)], output_dir / data["filename"], data["width"], data["height"])
+            restore_image(files[int(index)], None, data, output_dir)
         else:
             print(f"Warning: Missing frame for index {index}")
 
     with ThreadPoolExecutor() as executor:
         list(executor.map(process_item, metadata.items()))
 
-def crop_and_rename(image_path, new_path, width, height):
+def restore_image(image_path: Path, next_image_path: Path, data: dict, output_dir: Path):
     try:
+        new_path = output_dir / data["filename"]
+        width, height = data["width"], data["height"]
+        has_alpha = data["has_alpha"]
+        
         with Image.open(image_path) as img:
             cropped_img = img.crop((0, 0, width, height))
             cropped_img.save(new_path)
@@ -57,7 +62,7 @@ def crop_and_rename(image_path, new_path, width, height):
     except Exception as e:
         print(f"Failed to process {image_path}: {e}")
 
-def unpack_video(video_file, output_dir):
+def unpack_video(video_file: str, output_dir: Path):
     output_dir = Path(output_dir)
     output_dir.mkdir(parents=True, exist_ok=True)  # Ensure output directory exists
     

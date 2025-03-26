@@ -8,3 +8,13 @@ wheels/
 
 # Virtual environments
 .venv
+
+# Output files
+*.7z
+*.mkv
+*.png
+*.JPG
+*_dataset
+*_unpacked
+*.json
+*.gz
