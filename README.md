@@ -13,6 +13,8 @@ Fundamentally what this project does, it "packs" your album (folder) of images i
 ## Graphs
 Not a great benchmark but compressing the `gov_small` dataset, makes it about 50% smaller
 
+All related files are found [here](https://mega.nz/folder/ByxhSCZQ#TCxSIJBMlo5Y_0ijU2g8qg)
+
 ![](./chart.png)
 
 > **Warning**: The output file size can vary a lot depending on the images and the settings used so its not always better and can sometimes even be worse compared to zip archive, Also encoder settings work differently from encoder to encoder so best consult the ffmpeg docs as you go
